@@ -8,5 +8,5 @@
     <img  src="https://img.shields.io/static/v1?label=Version&message=0.1.0&color=blue" alt="version"/>
 </p>
 
-<h3 align="center" width="100%">Go package info uyility library</h3>
+<h3 align="center" width="100%">Go package info utility library</h3>
 

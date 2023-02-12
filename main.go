@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"flag"
+	"fmt"
 	"gov/config"
 	"gov/lib"
 	"os"
@@ -29,7 +30,10 @@ func init() {
 }
 
 func main() {
+	fmt.Println("GOPI - Go package info utility")
+
 	flag.Parse()
+
 	root, _ := os.Getwd()
 	cfg := config.New(rawConfig, rawTpl)
 	gopi := lib.New(cfg)
@@ -39,9 +43,12 @@ func main() {
 		os.Exit(0)
 	}
 
+	gopi.GetPackage(root)
+
 	if readMe {
-		gopi.GetPackage(root)
 		gopi.CreateReadme(root, false)
 		os.Exit(0)
 	}
+
+	fmt.Printf("No options selected please visit %s for usage information", gopi.Repo)
 }
