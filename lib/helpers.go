@@ -1,22 +1,15 @@
-package pkg
+package lib
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
-	"gov/version"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 )
 
-var arch = []string{
-	"linux_amd64",
-	"linux_arm64",
-	"darwin_amd64",
-	"darwin_arm64",
-	"windows",
-}
+var isSemver = regexp.MustCompile("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$")
 
 func contains(s []string, str string) bool {
 	for _, v := range s {
@@ -45,6 +38,20 @@ func prompt(label string, valid func(st string) bool) string {
 	return strings.TrimSpace(s)
 }
 
+func promptConfirm(label string) bool {
+	var s string
+	var err error
+	r := bufio.NewReader(os.Stdin)
+
+	_, err = fmt.Fprint(os.Stderr, label)
+	s, err = r.ReadString('\n')
+	if err != nil {
+		log.Fatalln("Unable to read/write from/to console.")
+	}
+	st := strings.TrimSpace(s)
+	return st == "y" || st == "yes"
+}
+
 func getValidator(name string) func(st string) bool {
 	v := map[string]func(st string) bool{
 		"none": func(st string) bool {
@@ -56,30 +63,31 @@ func getValidator(name string) func(st string) bool {
 		},
 		// check string is a valid semver version
 		"semver": func(st string) bool {
-			err := version.MustParse(st)
-			return err != nil
+			return isSemver.MatchString(strings.TrimSpace(st))
 		},
 	}
 	return v[name]
 }
 
-func archValid(st string) ([]string, error) {
+func archValid(st string, archList []string) ([]string, error) {
 	if len(strings.TrimSpace(st)) == 0 {
 		panic("Empty arch list")
 	}
 
 	var lst []string
 
-	arhList := strings.Split(st, ",")
-	for _, a := range arhList {
+	al := strings.Split(st, ",")
+	for _, a := range al {
 		tmp := strings.TrimSpace(a)
-		if len(tmp) > 0 && contains(arch, tmp) {
+		if len(tmp) > 0 && contains(archList, tmp) {
 			lst = append(lst, tmp)
 		} else {
-			return nil, errors.New(
-				fmt.Sprintf("invalid architecture specification: %s", tmp),
-			)
+			fmt.Printf("invalid architecture specification: %s. It wioll be ignored", tmp)
+
 		}
+	}
+	if len(lst) == 0 {
+		fmt.Println("No build architecture specified. Assuming local platform.")
 	}
 	return lst, nil
 }

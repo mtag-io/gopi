@@ -1,0 +1,11 @@
+# gopi pkg.info file
+
+name: gopi
+version: 0.1.0
+description: Go package info uyility library
+tenant: m-tag
+repo: https://github.com/mtag-io/gopi
+arch:
+    - linux_amd64
+    - darwin_amd64
+    - darwin_arm64
